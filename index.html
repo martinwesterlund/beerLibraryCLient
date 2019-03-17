@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Beer library</title>
+    <style>
+
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color:#f8f8ff;
+        }
+
+        input {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 10px;
+            background-color: white;
+            
+        }
+
+        button {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 10px;
+        }
+        
+        textarea {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 10px;
+        }
+
+        .beers {
+            display: flex;
+
+            background:#e5e5ff;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .beers ul {
+            list-style: none;
+            padding-right: 100px;
+        }
+
+        .beers button {
+            float: right;
+            align-self: center;
+            margin: 10px;
+            height: 40px;
+        }
+
+
+        
+        .modal {
+
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 1;
+            /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0);
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Black w/ opacity */
+        }
+
+        
+        .modal-content {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #fefefe;
+            margin: 15% auto;
+            
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            
+        }
+
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Beer Library</h1>
+<hr>
+    <form>
+        <input type="text" id="brand" name="brand" placeholder="Brand" /> <br />
+        
+        <textarea id="description" rows="5" cols="40" placeholder="Description"></textarea><br />
+        
+        <input type="text" id="rating" name="rating" placeholder="Rating 1-5" /><br />
+        
+    </form>
+
+    <button id="button2">Add beer</button>
+    <br></br>
+    <hr>
+    
+    <button id="button">Load beers</button>
+    <br></br>
+    <div id="beers"></div>
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="beer-form" onsubmit="updateBeerData(event) & loadBeers()">
+                <input type="text" id="uptBrand" name="brand" placeholder="Brand" />
+                <br />
+                <textarea id="uptDescription" rows="4" cols="40" maxlength="400"></textarea>
+                <br />
+                <input type="text" id="uptRating" name="rating" placeholder="Rating" />
+                <button>Submit</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        loadBeers();
+        var modal = document.getElementById('myModal');
+        var span = document.getElementsByClassName("close")[0];
+        var myBeer;
+        document.getElementById('button').addEventListener('click', loadBeers);
+        document.getElementById('button2').addEventListener('click', saveBeer);
+             
+
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+        function deleteBeer(_target) {
+            xhr2 = new XMLHttpRequest;
+            //var beerIdToBeDeleted = document.getElementById('deleteId').value;
+            // console.log(_target);
+            // myBeer = document.getElementById(_target);
+            // var beerId = parseInt(myBeer.getElementById("beerId").innerHTML,10) +1;
+            // var xhr2 = new XMLHttpRequest;
+
+            xhr2.open("DELETE", "http://martinsbeerlibrary-env.v9iyawrw9s.eu-north-1.elasticbeanstalk.com/beers/" + _target, false);
+
+            xhr2.onreadystatechange = function () { // Call a function when the state changes.
+                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                    // Request finished. Do processing here.
+                }
+            }
+
+            xhr2.send();
+            loadBeers();
+
+
+
+        }
+
+        function updateMethod(_target) {
+            modal.style.display = "block";
+            myBeer = document.getElementById(_target);
+
+            document.getElementById("uptBrand").value = myBeer.querySelector("#beerBrand").innerHTML;
+            document.getElementById("uptDescription").value = myBeer.querySelector("#beerDesc").innerHTML;
+            document.getElementById("uptRating").value = myBeer.querySelector("#beerRating").innerHTML;
+        }
+
+        function updateBeerData(event) {
+            event.preventDefault();
+            modal.style.display = "none";
+            var beerIdToBeUpdated = myBeer.querySelector("#beerId").innerHTML;
+
+            const toSend = {
+                brand: document.getElementById('uptBrand').value,
+                description: document.getElementById('uptDescription').value,
+                rating: document.getElementById('uptRating').value
+            };
+
+            const jsonString = JSON.stringify(toSend);
+            var xhr2 = new XMLHttpRequest;
+
+            xhr2.open("PUT", "http://martinsbeerlibrary-env.v9iyawrw9s.eu-north-1.elasticbeanstalk.com/beers/" + beerIdToBeUpdated, true);
+            xhr2.setRequestHeader("Content-type", "application/json");
+
+            xhr2.onreadystatechange = function () { 
+                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                   
+                }
+            }
+
+            xhr2.send(jsonString);
+            loadBeers();
+
+        }
+
+        function loadBeers() {
+            console.log('loading beers');
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://martinsbeerlibrary-env.v9iyawrw9s.eu-north-1.elasticbeanstalk.com/beers', true);
+            xhr.onload = function () {
+                if (this.status == 200) {
+                    var beers = JSON.parse(this.responseText);
+
+                    var output = '';
+                    for (var i in beers) {
+                        output +=
+                            '<div class="beers" id="' + i + '">' +
+                            '<ul>' +
+                            '<li>Id: <span id="beerId">' + beers[i].id + '</span></li>' +
+                            '<li id="beerBrand">' + beers[i].brand + '</li>' +
+                            '<li>Description: <span id="beerDesc">' + beers[i].description + '</span></li>' +
+                            '<li>Rating: <span id="beerRating">' + beers[i].rating + '</span></li>' +
+                            '</ul>' +
+                            '<button id="btn-update" onClick="updateMethod(' + i + ')">Update</button>' +
+                            '<button id="deleteBtn" onClick="deleteBeer(' + beers[i].id + ')">Delete</button>' +
+                            '</div>';
+                        console.log("Värde I= " + i);
+                    }
+                    document.getElementById('beers').innerHTML = output;
+                }
+            }
+            xhr.send();
+        }
+
+        function saveBeer() {
+            console.log(document.getElementById('brand').value);
+
+            const toSend = {
+                brand: document.getElementById('brand').value,
+                description: document.getElementById('description').value,
+                rating: document.getElementById('rating').value
+            };
+
+            const jsonString = JSON.stringify(toSend);
+            var xhr2 = new XMLHttpRequest;
+
+            xhr2.open("POST", "http://martinsbeerlibrary-env.v9iyawrw9s.eu-north-1.elasticbeanstalk.com/beers", true);
+            xhr2.setRequestHeader("Content-type", "application/json");
+
+            xhr2.onreadystatechange = function () { 
+                if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                    
+                }
+            }
+
+            xhr2.send(jsonString);
+            loadBeers();
+            
+        }
+
+    </script>
+</body>
+
+</html>
